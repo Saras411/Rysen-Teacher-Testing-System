@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+{% block title %}Teacher Portal - Rysen Education{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="welcome-section text-center mb-5">
+      <h1 class="display-4 text-primary mb-3">
+        <i class="fas fa-rocket me-3"></i>
+        Welcome to Rysen Teacher Exam Portal
+      </h1>
+      <p class="lead text-muted">Select kit, level, and start your assessment.</p>
+    </div>
+    <div class="card shadow-lg border-0">
+      <form id="testForm" autocomplete="off">
+        <div class="card-header bg-gradient-primary text-white">
+          <h3 class="card-title mb-0">
+            <i class="fas fa-chalkboard-teacher"></i> Teacher Details
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="teacherName" class="form-label fw-bold">Teacher Name</label>
+              <input type="text" id="teacherName" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="school" class="form-label fw-bold">Select School</label>
+              <select id="school" class="form-select" required>
+                <option value="">Choose school...</option>
+                {% for school in schools %}
+                <option value="{{ school }}">{{ school }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="kit-selection mb-3">
+            <label class="form-label fw-bold mb-2">Select Kit</label>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="kit-card" data-kit="eduplay">
+                  <div class="kit-icon"><i class="fas fa-gamepad"></i></div>
+                  <h5>EduPlay</h5>
+                  <p>Interactive Games</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="kit-card" data-kit="cretile">
+                  <div class="kit-icon"><i class="fas fa-puzzle-piece"></i></div>
+                  <h5>Cretile</h5>
+                  <p>Creative Blocks</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="kit-card" data-kit="pictoblocks">
+                  <div class="kit-icon"><i class="fas fa-cubes"></i></div>
+                  <h5>PictoBlocks</h5>
+                  <p>Visual Programming</p>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="selectedKit" required>
+          </div>
+
+          <div class="level-selection mb-3" style="display:none;">
+            <label class="form-label fw-bold mb-2">Select Level</label>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="level-card" data-level="junior">
+                  <div class="level-icon"><i class="fas fa-star"></i></div>
+                  <h5>Junior</h5>
+                  <p>Basic</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="level-card" data-level="intermediate">
+                  <div class="level-icon"><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                  <h5>Intermediate</h5>
+                  <p>Medium</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="level-card" data-level="advance">
+                  <div class="level-icon"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                  <h5>Advance</h5>
+                  <p>Expert</p>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="selectedLevel" required>
+          </div>
+
+          <div class="text-center">
+            <button type="submit" id="startTestBtn" class="btn btn-primary btn-lg">Start Test</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Test Modal -->
+<div class="modal fade" id="testModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="modal-title">
+          <i class="fas fa-clock me-2"></i>Exam in Progress
+        </h5>
+        <span id="test-timer-display" class="badge bg-light text-dark"></span>
+      </div>
+      <div class="modal-body">
+        <div id="testContent"></div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <span id="question-counter" class="fw-bold"></span>
+        <div>
+          <button id="prevBtn" class="btn btn-secondary" onclick="previousQuestion()">Previous</button>
+          <button id="nextBtn" class="btn btn-primary" onclick="nextQuestion()">Next</button>
+          <button id="submitBtn" class="btn btn-success" onclick="submitTest()" style="display:none;">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Result Modal -->
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content text-center">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Test Results</h5>
+      </div>
+      <div class="modal-body">
+        <h2 id="result-score" class="mb-1"></h2>
+        <h3 id="result-percent" class="mb-3"></h3>
+        <p>Thank you for completing the exam.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentQuestions = [];
+let currentIndex = 0;
+let userAnswers = [];
+let examActive = false;
+let timerInterval = null;
+let timeLeft = 0;
+
+document.querySelectorAll('.kit-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.kit-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('selectedKit').value = card.dataset.kit;
+    document.querySelector('.level-selection').style.display = 'block';
+  });
+});
+
+document.querySelectorAll('.level-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('selectedLevel').value = card.dataset.level;
+  });
+});
+
+document.getElementById('testForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const data = {
+    teacher_name: document.getElementById('teacherName').value.trim(),
+    school: document.getElementById('school').value,
+    kit: document.getElementById('selectedKit').value,
+    level: document.getElementById('selectedLevel').value
+  };
+
+  if (!data.teacher_name || !data.school || !data.kit || !data.level) {
+    alert('Please complete all required fields.');
+    return;
+  }
+
+  try {
+    const response = await fetch('/start_test', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
+
+    if (!result.questions || result.questions.length === 0) {
+      alert('No questions found for the selected kit and level. Please contact admin.');
+      return;
+    }
+
+    currentQuestions = result.questions;
+    userAnswers = new Array(currentQuestions.length).fill(null);
+    currentIndex = 0;
+    examActive = true;
+    timeLeft = (result.test_time || 15) * 60;
+
+    loadQuestion();
+
+    const timerDisplay = document.getElementById('test-timer-display');
+    updateTimer();
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (!examActive) return;
+      timeLeft--;
+      updateTimer();
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        alert('Time is up! Submitting the test automatically.');
+        submitTest();
+      }
+    }, 1000);
+
+    const modal = new bootstrap.Modal(document.getElementById('testModal'));
+    modal.show();
+
+  } catch (err) {
+    alert('Error starting test. Please try again later.');
+    console.error(err);
+  }
+});
+
+function updateTimer() {
+  if(!examActive){
+    document.getElementById('test-timer-display').textContent = "";
+    return;
+  }
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  document.getElementById('test-timer-display').textContent = `Time Left: ${m}:${s < 10 ? '0' + s : s}`;
+}
+
+function loadQuestion() {
+  const q = currentQuestions[currentIndex];
+  if (!q) return;
+  document.getElementById('question-counter').textContent = `Question ${currentIndex +1} of ${currentQuestions.length}`;
+  const container = document.getElementById('testContent');
+  container.innerHTML = `
+    <div class="mb-3">${q.question}</div>
+    <form id="options-form">
+      ${q.options.map((opt,i) => `
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="answer" id="option${i}" value="${i}">
+          <label class="form-check-label" for="option${i}">${opt}</label>
+        </div>`).join('')
+      }
+    </form>
+  `;
+
+  if (userAnswers[currentIndex] !== null) {
+    const selected = document.getElementById(`option${userAnswers[currentIndex]}`);
+    if(selected) selected.checked = true;
+  }
+
+  // Attach change handlers
+  const inputs = document.querySelectorAll('#options-form input[type=radio]');
+  inputs.forEach(input => {
+    input.addEventListener('change', e => {
+      userAnswers[currentIndex] = parseInt(e.target.value);
+    });
+  });
+
+  // Update buttons visibility
+  document.getElementById('prevBtn').style.display = currentIndex === 0 ? 'none' : '';
+  document.getElementById('nextBtn').style.display = currentIndex === currentQuestions.length -1 ? 'none' : '';
+  document.getElementById('submitBtn').style.display = currentIndex === currentQuestions.length -1 ? '' : 'none';
+}
+
+
+function nextQuestion() {
+  if(currentIndex < currentQuestions.length -1){
+    currentIndex++;
+    loadQuestion();
+  }
+}
+
+function previousQuestion() {
+  if(currentIndex >0){
+    currentIndex--;
+    loadQuestion();
+  }
+}
+
+async function submitTest() {
+  if(!examActive) return;
+
+  if (userAnswers.includes(null)){
+    if(!confirm("You have unanswered questions. Submit anyway?")){
+      return;
+    }
+  }
+
+  try {
+    const response = await fetch('/submit_test', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({answers: userAnswers})
+    });
+    const result = await response.json();
+
+    examActive = false;
+    clearInterval(timerInterval);
+
+    let modal = bootstrap.Modal.getInstance(document.getElementById('testModal'));
+    if(modal) modal.hide();
+
+    document.getElementById('result-score').textContent = `Score: ${result.score} / ${result.total}`;
+    document.getElementById('result-percent').textContent = `Percentage: ${result.percentage.toFixed(2)}%`;
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('resultModal')).show();
+
+    document.getElementById('testForm').reset();
+    document.querySelectorAll('.kit-card, .level-card').forEach(el => el.classList.remove('selected'));
+    document.querySelector('.level-selection').style.display = 'none';
+
+  } catch(err){
+    alert('Error submitting test.');
+    console.error(err);
+  }
+}
+</script>
+{% endblock %}

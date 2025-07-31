@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Admin Login{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card shadow-lg mt-5">
+            <div class="card-header bg-primary text-white"><h4>Admin Portal Login</h4></div>
+            <div class="card-body">
+                <form method="post">
+                    <label for="password" class="form-label fw-bold">Admin Password:</label>
+                    <input type="password" class="form-control mb-4" name="password" id="password" required>
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

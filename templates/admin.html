@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel - Rysen Education{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="admin-header text-center mb-4">
+            <h1 class="display-5 text-primary">
+                <i class="fas fa-shield-alt me-3"></i>
+                Admin Control Panel
+            </h1>
+            <p class="lead text-muted">Manage questions, test timing, and analyze performance</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <ul class="nav nav-pills nav-fill mb-4" id="adminTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="questions-tab" data-bs-toggle="pill" href="#questions">
+                    <i class="fas fa-question-circle me-2"></i>Manage Questions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="timing-tab" data-bs-toggle="pill" href="#timing">
+                    <i class="fas fa-clock me-2"></i>Set Test Time
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="leaderboard-tab" data-bs-toggle="pill" href="#leaderboard">
+                    <i class="fas fa-trophy me-2"></i>Leaderboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="analysis-tab" data-bs-toggle="pill" href="#analysis">
+                    <i class="fas fa-chart-bar me-2"></i>Performance Analysis
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="results-tab" data-bs-toggle="pill" href="#results">
+                    <i class="fas fa-list-alt me-2"></i>All Results
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="tab-content">
+    <!-- Question Tab -->
+    <div class="tab-pane fade show active" id="questions">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5>
+                            <i class="fas fa-plus me-2"></i>Add New Question
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="questionForm">
+                            <div class="mb-3">
+                                <label class="form-label">Kit</label>
+                                <select class="form-select" id="questionKit" required>
+                                    <option value="eduplay">EduPlay</option>
+                                    <option value="cretile">Cretile</option>
+                                    <option value="pictoblocks">PictoBlocks</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Level</label>
+                                <select class="form-select" id="questionLevel" required>
+                                    <option value="junior">Junior</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advance">Advance</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Question</label>
+                                <textarea class="form-control" id="questionText" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Options</label>
+                                <input type="text" class="form-control mb-2" id="option1" placeholder="Option 1" required>
+                                <input type="text" class="form-control mb-2" id="option2" placeholder="Option 2" required>
+                                <input type="text" class="form-control mb-2" id="option3" placeholder="Option 3" required>
+                                <input type="text" class="form-control" id="option4" placeholder="Option 4" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Correct Answer</label>
+                                <select class="form-select" id="correctAnswer" required>
+                                    <option value="0">Option 1</option>
+                                    <option value="1">Option 2</option>
+                                    <option value="2">Option 3</option>
+                                    <option value="3">Option 4</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-plus me-2"></i>Add Question
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h5>
+                            <i class="fas fa-list me-2"></i>Existing Questions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <select class="form-select" id="filterKit" onchange="loadQuestions()">
+                                        <option value="eduplay">EduPlay</option>
+                                        <option value="cretile">Cretile</option>
+                                        <option value="pictoblocks">PictoBlocks</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-select" id="filterLevel" onchange="loadQuestions()">
+                                        <option value="junior">Junior</option>
+                                        <option value="intermediate">Intermediate</option>
+                                        <option value="advance">Advance</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="questionsList" class="questions-list">
+                            <!-- Questions will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timing Tab -->
+    <div class="tab-pane fade" id="timing">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5><i class="fas fa-clock me-2"></i>Set Test Time for Teacher</h5>
+            </div>
+            <div class="card-body">
+                <form id="timingForm">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <input class="form-control" placeholder="Teacher Name" id="timingTeacher" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <select class="form-select" id="timingKit" required>
+                                <option value="eduplay">EduPlay</option>
+                                <option value="cretile">Cretile</option>
+                                <option value="pictoblocks">PictoBlocks</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <select class="form-select" id="timingLevel" required>
+                                <option value="junior">Junior</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advance">Advance</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <input class="form-control" type="number" min="1" max="120" placeholder="Minutes" id="timingMinutes" required>
+                        </div>
+                        <div class="col-md-1 mb-3">
+                            <button class="btn btn-success w-100" type="submit"><i class="fas fa-save"></i></button>
+                        </div>
+                    </div>
+                </form>
+                <div id="timingInfo" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Tab -->
+    <div class="tab-pane fade" id="leaderboard">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h5>
+                    <i class="fas fa-trophy me-2"></i>Top Teachers
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="leaderboardContent">
+                    <!-- Leaderboard will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Tab -->
+    <div class="tab-pane fade" id="analysis">
+        <div class="row">
+            <!-- School, Kit, Level, Overall -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white"><h5><i class="fas fa-school me-2"></i>School Performance</h5></div>
+                    <div class="card-body"><div id="schoolAnalysis"></div></div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white"><h5><i class="fas fa-box me-2"></i>Kit Performance</h5></div>
+                    <div class="card-body"><div id="kitAnalysis"></div></div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white"><h5><i class="fas fa-layer-group me-2"></i>Level Performance</h5></div>
+                    <div class="card-body"><div id="levelAnalysis"></div></div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white"><h5><i class="fas fa-chart-line me-2"></i>Overall Statistics</h5></div>
+                    <div class="card-body"><div id="overallStats"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Tab -->
+    <div class="tab-pane fade" id="results">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5>
+                    <i class="fas fa-list-alt me-2"></i>All Test Results
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Teacher</th>
+                                <th>School</th>
+                                <th>Kit</th>
+                                <th>Level</th>
+                                <th>Score</th>
+                                <th>Percentage</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTable">
+                            <!-- Results will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.questionsData = {
+    "eduplay": {"junior": [], "intermediate": [], "advance": []},
+    "cretile": {"junior": [], "intermediate": [], "advance": []},
+    "pictoblocks": {"junior": [], "intermediate": [], "advance": []}
+};
+window.resultsData = [];
+window.schoolsData = ["Rysen Bikaner", "Rysen Ganganagar", "Rysen Deoli", "Rysen Nimbahera"];
+window.testTimingsData = {};
+
+async function initializeData() {
+    try {
+        const resp = await fetch('/get_admin_data');
+        if (resp.ok) {
+            const data = await resp.json();
+            window.questionsData = data.questions || window.questionsData;
+            window.resultsData = data.results || window.resultsData;
+            window.schoolsData = data.schools || window.schoolsData;
+            window.testTimingsData = data.timings || {};
+        }
+        loadQuestions();
+        loadResults();
+        showTimingInfo();
+    } catch(e) {
+        loadQuestions();
+        loadResults();
+        showTimingInfo();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initializeData);
+
+document.getElementById('leaderboard-tab').addEventListener('click', loadLeaderboard);
+document.getElementById('analysis-tab').addEventListener('click', loadAnalysis);
+
+// Question form submission
+document.getElementById('questionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const questionData = {
+        kit: document.getElementById('questionKit').value,
+        level: document.getElementById('questionLevel').value,
+        question: document.getElementById('questionText').value,
+        options: [
+            document.getElementById('option1').value,
+            document.getElementById('option2').value,
+            document.getElementById('option3').value,
+            document.getElementById('option4').value
+        ],
+        correct_answer: parseInt(document.getElementById('correctAnswer').value)
+    };
+    try {
+        const response = await fetch('/add_question', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(questionData)
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert('Question added successfully!');
+            document.getElementById('questionForm').reset();
+            location.reload();
+        }
+    } catch (error) {
+        alert('Error adding question. Please try again.');
+    }
+});
+
+document.getElementById('timingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const teacher = document.getElementById('timingTeacher').value;
+    const kit = document.getElementById('timingKit').value;
+    const level = document.getElementById('timingLevel').value;
+    const minutes = document.getElementById('timingMinutes').value;
+    if (!teacher || !kit || !level || !minutes) return;
+    try {
+        const response = await fetch('/set_timing', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                teacher_name: teacher,
+                kit: kit,
+                level: level,
+                minutes: minutes
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert('Test timing set!');
+            window.testTimingsData[[teacher, kit, level].join(",")] = parseInt(minutes);
+            showTimingInfo();
+            document.getElementById('timingForm').reset();
+        }
+    } catch (err) {
+        alert('Error setting time.');
+    }
+});
+
+function showTimingInfo() {
+    const timingDiv = document.getElementById('timingInfo');
+    const timings = window.testTimingsData || {};
+    let out = '<b>Current Test Timings:</b><ul>';
+    for (const k in timings) {
+        let [teacher, kit, level] = k.split(",");
+        out += `<li><strong>${teacher}</strong> - ${kit} ${level}: <b>${timings[k]} min</b></li>`;
+    }
+    out += '</ul>';
+    timingDiv.innerHTML = out;
+}
+
+async function loadQuestions() {
+    const kit = document.getElementById('filterKit').value;
+    const level = document.getElementById('filterLevel').value;
+    const questions = (window.questionsData && window.questionsData[kit] && window.questionsData[kit][level]) || [];
+    const questionsList = document.getElementById('questionsList');
+    if (questions.length === 0) {
+        questionsList.innerHTML = '<p class="text-muted text-center">No questions found for this kit and level.</p>';
+        return;
+    }
+    questionsList.innerHTML = questions.map(q => `
+        <div class="question-item border rounded p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold">Q${q.id}: ${q.question}</h6>
+                    <div class="options mt-2">
+                        ${q.options.map((option, index) => `
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" disabled ${index === q.correct_answer ? 'checked' : ''}>
+                                <label class="form-check-label ${index === q.correct_answer ? 'text-success fw-bold' : ''}">
+                                    ${option} ${index === q.correct_answer ? '(Correct)' : ''}
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="deleteQuestion('${kit}', '${level}', ${q.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function deleteQuestion(kit, level, questionId) {
+    if (!confirm('Are you sure you want to delete this question?')) return;
+    try {
+        const response = await fetch('/delete_question', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({kit, level, question_id: questionId})
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert('Question deleted successfully!');
+            location.reload();
+        }
+    } catch (error) {
+        alert('Error deleting question. Please try again.');
+    }
+}
+
+async function loadLeaderboard() {
+    try {
+        const response = await fetch('/get_leaderboard');
+        const leaderboard = await response.json();
+        const content = document.getElementById('leaderboardContent');
+        if (leaderboard.length === 0) {
+            content.innerHTML = '<p class="text-muted text-center">No test results available yet.</p>';
+            return;
+        }
+        content.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-warning">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Teacher</th>
+                            <th>School</th>
+                            <th>Kit</th>
+                            <th>Level</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${leaderboard.map((result, index) => `
+                            <tr>
+                                <td>
+                                    <span class="badge ${index === 0 ? 'bg-warning' : index === 1 ? 'bg-secondary' : index === 2 ? 'bg-warning' : 'bg-primary'}">${index + 1}</span>
+                                </td>
+                                <td>${result.teacher_name}</td>
+                                <td>${result.school}</td>
+                                <td class="text-capitalize">${result.kit}</td>
+                                <td class="text-capitalize">${result.level}</td>
+                                <td>${result.score}/${result.total}</td>
+                                <td>
+                                    <span class="badge ${result.percentage >= 80 ? 'bg-success' : result.percentage >= 60 ? 'bg-warning' : 'bg-danger'}">
+                                        ${result.percentage}%
+                                    </span>
+                                </td>
+                                <td>${new Date(result.date).toLocaleDateString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } catch (error) {
+        document.getElementById('leaderboardContent').innerHTML = '<p class="text-danger">Error loading leaderboard.</p>';
+    }
+}
+
+async function loadAnalysis() {
+    try {
+        const response = await fetch('/get_analysis');
+        const analysis = await response.json();
+
+        document.getElementById('overallStats').innerHTML = `
+            <div class="row text-center">
+                <div class="col-6">
+                    <h3 class="text-primary">${analysis.total_tests}</h3>
+                    <p class="mb-0">Total Tests</p>
+                </div>
+                <div class="col-6">
+                    <h3 class="text-success">${analysis.average_score}%</h3>
+                    <p class="mb-0">Average Score</p>
+                </div>
+            </div>
+        `;
+        // School Performance
+        const schoolAnalysis = document.getElementById('schoolAnalysis');
+        if (Object.keys(analysis.school_performance).length === 0) {
+            schoolAnalysis.innerHTML = '<p class="text-muted">No data available</p>';
+        } else {
+            schoolAnalysis.innerHTML = Object.entries(analysis.school_performance).map(([school, data]) => `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>${school}</span>
+                    <div>
+                        <span class="badge bg-primary me-2">${data.tests} tests</span>
+                        <span class="badge bg-success">${data.average.toFixed(1)}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        // Kit Performance
+        const kitAnalysis = document.getElementById('kitAnalysis');
+        if (Object.keys(analysis.kit_performance).length === 0) {
+            kitAnalysis.innerHTML = '<p class="text-muted">No data available</p>';
+        } else {
+            kitAnalysis.innerHTML = Object.entries(analysis.kit_performance).map(([kit, data]) => `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-capitalize">${kit}</span>
+                    <div>
+                        <span class="badge bg-primary me-2">${data.tests} tests</span>
+                        <span class="badge bg-success">${data.average.toFixed(1)}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        // Level Performance
+        const levelAnalysis = document.getElementById('levelAnalysis');
+        if (Object.keys(analysis.level_performance).length === 0) {
+            levelAnalysis.innerHTML = '<p class="text-muted">No data available</p>';
+        } else {
+            levelAnalysis.innerHTML = Object.entries(analysis.level_performance).map(([level, data]) => `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-capitalize">${level}</span>
+                    <div>
+                        <span class="badge bg-primary me-2">${data.tests} tests</span>
+                        <span class="badge bg-success">${data.average.toFixed(1)}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading analysis:', error);
+    }
+}
+
+function loadResults() {
+    const results = window.resultsData || [];
+    const resultsTable = document.getElementById('resultsTable');
+
+    if (results.length === 0) {
+        resultsTable.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No test results available yet.</td></tr>';
+        return;
+    }
+
+    resultsTable.innerHTML = results.map(result => `
+        <tr>
+            <td>${result.id}</td>
+            <td>${result.teacher_name}</td>
+            <td>${result.school}</td>
+            <td class="text-capitalize">${result.kit}</td>
+            <td class="text-capitalize">${result.level}</td>
+            <td>${result.score}/${result.total}</td>
+            <td>
+                <span class="badge ${result.percentage >= 80 ? 'bg-success' : result.percentage >= 60 ? 'bg-warning' : 'bg-danger'}">
+                    ${result.percentage}%
+                </span>
+            </td>
+            <td>${new Date(result.date).toLocaleDateString()}</td>
+        </tr>
+    `).join('');
+}
+</script>
+{% endblock %}
