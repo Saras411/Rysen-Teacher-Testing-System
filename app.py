@@ -14,7 +14,7 @@ questions_db = {
     'pictoblocks': {'junior': [], 'intermediate': [], 'advance': []}
 }
 results_db = []
-schools = ['Rysen Bikanagar', 'Rysen Bikaner', 'Rysen Deoli', 'Rysen Nimbhera']
+schools = ['Rysen Ganaganagar', 'Rysen Bikaner', 'Rysen Deoli', 'Rysen Nimbhera']
 
 # Key: (teacher_name, kit, level), Value: time in minutes
 test_timings_db = {}
