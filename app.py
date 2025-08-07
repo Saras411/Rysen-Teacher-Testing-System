@@ -12,7 +12,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///rysen.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# SQLAlchemy Models
+# SQLAlchemy Models (as you already have them)
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     kit = db.Column(db.String(50))
