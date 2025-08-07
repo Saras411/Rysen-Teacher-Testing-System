@@ -17,7 +17,7 @@ class Question(db.Model):
     kit = db.Column(db.String(50))
     level = db.Column(db.String(50))
     question = db.Column(db.Text)
-    options = db.Column(db.PickleType)  # stores list of options
+    options = db.Column(db.PickleType)   # stores list of options
     correct_answer = db.Column(db.Integer)
 
 class Result(db.Model):
