@@ -8,7 +8,7 @@ app.secret_key = 'rysen_secure_secret_key'
 ADMIN_PASSWORD = "yourSecurePassword"
 
 # Configure SQLite database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///rysen.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/rysen.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
