@@ -12,16 +12,36 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///rysen.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# In-memory data stores
-questions_db = {
-    'eduplay': {'junior': [], 'intermediate': [], 'advance': []},
-    'cretile': {'junior': [], 'intermediate': [], 'advance': []},
-    'pictoblocks': {'junior': [], 'intermediate': [], 'advance': []}
-}
-results_db = []
+# SQLAlchemy Models
+class Question(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    kit = db.Column(db.String(50))
+    level = db.Column(db.String(50))
+    question = db.Column(db.Text)
+    options = db.Column(db.PickleType)   # stores list of options
+    correct_answer = db.Column(db.Integer)
+
+class Result(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    teacher_name = db.Column(db.String(100))
+    school = db.Column(db.String(100))
+    kit = db.Column(db.String(50))
+    level = db.Column(db.String(50))
+    score = db.Column(db.Integer)
+    total = db.Column(db.Integer)
+    percentage = db.Column(db.Float)
+    date = db.Column(db.String(30))
+    answers = db.Column(db.PickleType)
+
+class TestTiming(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    teacher_name = db.Column(db.String(100))
+    kit = db.Column(db.String(50))
+    level = db.Column(db.String(50))
+    minutes = db.Column(db.Integer)
+
+# Schools list
 schools = ['Rysen Ganaganagar', 'Rysen Bikaner', 'Rysen Deoli', 'Rysen Nimbhera']
-
-
 
 @app.route('/')
 def index():
@@ -47,7 +67,6 @@ def admin_logout():
 def admin():
     if not session.get('is_admin'):
         return redirect(url_for('admin_login'))
-    # Fetch questions and results for display
     all_questions = Question.query.all()
     all_results = Result.query.order_by(Result.id.desc()).all()
     all_timings = TestTiming.query.all()
@@ -111,7 +130,6 @@ def start_test():
 
     questions = Question.query.filter_by(kit=data['kit'], level=data['level']).all()
     test_time = 15  # Default
-    # Find timing for this teacher/kit/level
     timing = TestTiming.query.filter_by(
         teacher_name=data['teacher_name'],
         kit=data['kit'],
@@ -125,7 +143,7 @@ def start_test():
             'id': q.id,
             'question': q.question,
             'options': q.options,
-            'correct_answer': None   # Do not send answer key to frontend
+            'correct_answer': None  # hide correct answer from frontend
         } for q in questions
     ]
     return jsonify({
@@ -289,4 +307,5 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True, port=5000)
+
 
