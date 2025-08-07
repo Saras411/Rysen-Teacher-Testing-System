@@ -12,36 +12,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///rysen.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# Models
-class Question(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    kit = db.Column(db.String(50))
-    level = db.Column(db.String(50))
-    question = db.Column(db.Text)
-    options = db.Column(db.PickleType)   # Stores list of options
-    correct_answer = db.Column(db.Integer)
-
-class Result(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    teacher_name = db.Column(db.String(100))
-    school = db.Column(db.String(100))
-    kit = db.Column(db.String(50))
-    level = db.Column(db.String(50))
-    score = db.Column(db.Integer)
-    total = db.Column(db.Integer)
-    percentage = db.Column(db.Float)
-    date = db.Column(db.String(30))
-    answers = db.Column(db.PickleType)
-
-class TestTiming(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    teacher_name = db.Column(db.String(100))
-    kit = db.Column(db.String(50))
-    level = db.Column(db.String(50))
-    minutes = db.Column(db.Integer)
-
-# School choices
-schools = ['Rysen Bikanagar', 'Rysen Bikaner', 'Rysen Deoli', 'Rysen Nimbhera']
+# In-memory data stores
+questions_db = {
+    'eduplay': {'junior': [], 'intermediate': [], 'advance': []},
+    'cretile': {'junior': [], 'intermediate': [], 'advance': []},
+    'pictoblocks': {'junior': [], 'intermediate': [], 'advance': []}
+}
+results_db = []
+schools = ['Rysen Ganaganagar', 'Rysen Bikaner', 'Rysen Deoli', 'Rysen Nimbhera']
 
 
 
