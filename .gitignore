@@ -28,3 +28,4 @@ env.bak/
 venv.bak/
 .DS_Store
 *.log
+instance/rysen.db
