@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import os
 
 app = Flask(__name__)
 app.secret_key = 'rysen_secure_secret_key'
@@ -12,13 +11,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///rysen.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# SQLAlchemy Models 
+# SQLAlchemy Models
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     kit = db.Column(db.String(50))
     level = db.Column(db.String(50))
     question = db.Column(db.Text)
-    options = db.Column(db.PickleType)   # stores list of options
+    options = db.Column(db.PickleType)  # stores list of options
     correct_answer = db.Column(db.Integer)
 
 class Result(db.Model):
@@ -143,7 +142,7 @@ def start_test():
             'id': q.id,
             'question': q.question,
             'options': q.options,
-            'correct_answer': None  # hide correct answer from frontend
+            'correct_answer': None  # Do not send correct answer to frontend
         } for q in questions
     ]
     return jsonify({
@@ -307,5 +306,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True, port=5000)
-
 
